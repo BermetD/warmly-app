@@ -31,7 +31,7 @@ export default function WarmlyDashboard() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  const [structuredTranscripts, setStructuredTranscripts] = useState<object[]>([{}]);
+  const [structuredTranscripts, setStructuredTranscripts] = useState<object[]>([]);
 
   useEffect(() => {
     const stored = localStorage.getItem("structuredTranscripts");
@@ -362,7 +362,7 @@ export default function WarmlyDashboard() {
           </TabsContent>
         </Tabs>
 
-        {structuredTranscripts.length > 0 && (
+        {structuredTranscripts.length > 0 && structuredTranscripts.some(obj => Object.keys(obj).length > 0) && (
           <Card className="mb-6 border-green-200 bg-green-50">
             <CardHeader>
               <CardTitle>Structured Transcripts</CardTitle>
@@ -371,7 +371,6 @@ export default function WarmlyDashboard() {
             <CardContent className="space-y-4">
               {structuredTranscripts.map((structured, idx) => (
                 <div key={idx} className="relative p-4 bg-white rounded border shadow-sm">
-                  {/* 🗑️ Remove button */}
                   <Button
                     variant="ghost"
                     size="sm"
