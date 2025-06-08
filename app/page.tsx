@@ -119,6 +119,7 @@ export default function WarmlyDashboard() {
           });
 
           const result = await response.json();
+          console.log(result)
           setStructuredTranscripts(prev => [...prev, result]);
         };
 
@@ -208,8 +209,13 @@ export default function WarmlyDashboard() {
                 <Users className="w-5 h-5 text-blue-600" />
                 <span className="text-sm font-medium text-gray-600">Total Contacts</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900 mt-2">—</p>
-              <p className="text-sm text-green-600 mt-1">—</p>
+              <p className="text-2xl font-bold text-gray-900 mt-2">
+                {structuredTranscripts.length !== 0
+                  ? structuredTranscripts.reduce((sum, currentValue, currentIndex, array) => {
+                    return sum + currentValue["Names of Speakers"].length;
+                  }, 0)
+                  : "—"}
+              </p>
             </CardContent>
           </Card>
 
@@ -219,8 +225,9 @@ export default function WarmlyDashboard() {
                 <Clock className="w-5 h-5 text-green-600" />
                 <span className="text-sm font-medium text-gray-600">Conversations</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900 mt-2">—</p>
-              <p className="text-sm text-green-600 mt-1">—</p>
+              <p className="text-2xl font-bold text-gray-900 mt-2">
+                {structuredTranscripts.length !== 0 ? structuredTranscripts.length : "—"}
+              </p>
             </CardContent>
           </Card>
 
@@ -230,8 +237,13 @@ export default function WarmlyDashboard() {
                 <Calendar className="w-5 h-5 text-orange-600" />
                 <span className="text-sm font-medium text-gray-600">Follow-ups</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900 mt-2">—</p>
-              <p className="text-sm text-orange-600 mt-1">—</p>
+              <p className="text-2xl font-bold text-gray-900 mt-2">
+                {structuredTranscripts.length !== 0
+                  ? structuredTranscripts.reduce((sum, currentValue, currentIndex, array) => {
+                    return sum + currentValue["Things to Follow Up On"].length;
+                  }, 0)
+                  : "—"}
+              </p>
             </CardContent>
           </Card>
 
@@ -241,8 +253,13 @@ export default function WarmlyDashboard() {
                 <TrendingUp className="w-5 h-5 text-purple-600" />
                 <span className="text-sm font-medium text-gray-600">Opportunities</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900 mt-2">—</p>
-              <p className="text-sm text-purple-600 mt-1">—</p>
+              <p className="text-2xl font-bold text-gray-900 mt-2">
+                {structuredTranscripts.length !== 0
+                  ? structuredTranscripts.reduce((sum, currentValue, currentIndex, array) => {
+                    return sum + currentValue["Social or Business Overlaps"].length;
+                  }, 0)
+                  : "—"}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -272,13 +289,13 @@ export default function WarmlyDashboard() {
               </Button>
             </div>
 
-            <div className="text-center py-12 text-gray-500">
+            {structuredTranscripts.length === 0 && <div className="text-center py-12 text-gray-500">
               <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No conversations yet</h3>
               <p className="text-sm">
                 Start recording to capture and analyze your networking conversations
               </p>
-            </div>
+            </div>}
           </TabsContent>
 
           <TabsContent value="contacts" className="space-y-4">
