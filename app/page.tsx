@@ -21,36 +21,18 @@ import {
   Plus,
   TrendingUp,
   Clock,
-  User,
 } from "lucide-react";
-
-interface SpeakerSegment {
-  speaker: number;
-  text: string;
-  start: number;
-  end: number;
-}
-
-interface TranscriptionResponse {
-  transcript: string;
-  speakerSegments: SpeakerSegment[];
-  totalSpeakers: number;
-}
 
 export default function WarmlyDashboard() {
   const [isRecording, setIsRecording] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [transcript, setTranscript] = useState("");
-  const [speakerSegments, setSpeakerSegments] = useState<SpeakerSegment[]>([]);
-  const [totalSpeakers, setTotalSpeakers] = useState(0);
-  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [transcript, setTranscript] = useState(""); // New transcript state
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const mediaStreamRef = useRef<MediaStream | null>(null); // Add this line
   const audioChunksRef = useRef<Blob[]>([]);
 
   const upcomingReminders = [];
 
-  async function transcribeAudioWithDeepgram(audioBlob: Blob): Promise<TranscriptionResponse> {
+  async function transcribeAudioWithDeepgram(audioBlob: Blob): Promise<string> {
     try {
       const response = await fetch("/api/transcribe", {
         method: "POST",
@@ -65,38 +47,12 @@ export default function WarmlyDashboard() {
       }
 
       const data = await response.json();
-      return {
-        transcript: data.transcript || "",
-        speakerSegments: data.speakerSegments || [],
-        totalSpeakers: data.totalSpeakers || 0,
-      };
+      return data.transcript || "";
     } catch (error) {
       console.error("Transcription error:", error);
-      return {
-        transcript: "Failed to transcribe audio.",
-        speakerSegments: [],
-        totalSpeakers: 0,
-      };
+      return "Failed to transcribe audio.";
     }
   }
-
-  const formatTime = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
-  const getSpeakerColor = (speakerIndex: number): string => {
-    const colors = [
-      "bg-blue-100 text-blue-800 border-blue-200",
-      "bg-green-100 text-green-800 border-green-200",
-      "bg-purple-100 text-purple-800 border-purple-200",
-      "bg-orange-100 text-orange-800 border-orange-200",
-      "bg-pink-100 text-pink-800 border-pink-200",
-      "bg-indigo-100 text-indigo-800 border-indigo-200",
-    ];
-    return colors[speakerIndex % colors.length];
-  };
 
   const handleRecordingToggle = async () => {
     if (!isRecording) {
@@ -104,7 +60,6 @@ export default function WarmlyDashboard() {
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: true,
         });
-        mediaStreamRef.current = stream; // Store the stream reference
         const mediaRecorder = new MediaRecorder(stream);
         mediaRecorderRef.current = mediaRecorder;
         audioChunksRef.current = [];
@@ -116,7 +71,6 @@ export default function WarmlyDashboard() {
         };
 
         mediaRecorder.onstop = async () => {
-          setIsTranscribing(true);
           const audioBlob = new Blob(audioChunksRef.current, {
             type: "audio/webm",
           });
@@ -131,11 +85,8 @@ export default function WarmlyDashboard() {
           reader.readAsDataURL(audioBlob);
 
           // Call Deepgram API via backend
-          const transcriptionData = await transcribeAudioWithDeepgram(audioBlob);
-          setTranscript(transcriptionData.transcript);
-          setSpeakerSegments(transcriptionData.speakerSegments);
-          setTotalSpeakers(transcriptionData.totalSpeakers);
-          setIsTranscribing(false);
+          const transcriptText = await transcribeAudioWithDeepgram(audioBlob);
+          setTranscript(transcriptText);
         };
 
         mediaRecorder.start();
@@ -145,9 +96,7 @@ export default function WarmlyDashboard() {
       }
     } else {
       mediaRecorderRef.current?.stop();
-      // Use the stored stream reference instead
-      mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
-      mediaStreamRef.current = null; // Clean up the reference
+      mediaRecorderRef.current?.stream.getTracks().forEach((track) => track.stop());
       setIsRecording(false);
     }
   };
@@ -171,17 +120,9 @@ export default function WarmlyDashboard() {
               variant={isRecording ? "destructive" : "default"}
               onClick={handleRecordingToggle}
               className="flex items-center space-x-2"
-              disabled={isTranscribing}
             >
               {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-              <span>
-                {isTranscribing 
-                  ? "Transcribing..." 
-                  : isRecording 
-                    ? "Stop Recording" 
-                    : "Start Recording"
-                }
-              </span>
+              <span>{isRecording ? "Stop Recording" : "Start Recording"}</span>
             </Button>
             <Button variant="outline" size="icon">
               <Bell className="w-4 h-4" />
@@ -204,81 +145,8 @@ export default function WarmlyDashboard() {
           </Card>
         )}
 
-        {/* Transcribing Status */}
-        {isTranscribing && (
-          <Card className="mb-6 border-yellow-200 bg-yellow-50">
-            <CardContent className="flex items-center space-x-3 p-4">
-              <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
-              <span className="text-yellow-800 font-medium">Transcribing audio...</span>
-              <span className="text-yellow-600 text-sm">
-                Processing speech and identifying speakers
-              </span>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Conversation Display */}
-        {speakerSegments.length > 0 && (
-          <Card className="mb-6 border-blue-200 bg-blue-50">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Users className="w-5 h-5" />
-                    <span>Conversation Transcript</span>
-                  </CardTitle>
-                  <CardDescription>
-                    {totalSpeakers} speaker{totalSpeakers !== 1 ? 's' : ''} detected
-                  </CardDescription>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {Array.from({ length: totalSpeakers }, (_, i) => (
-                    <div key={i} className={`px-2 py-1 rounded-full text-xs font-medium border ${getSpeakerColor(i)}`}>
-                      Speaker {i + 1}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="max-h-96 overflow-y-auto space-y-3">
-                {speakerSegments.map((segment, index) => (
-                  <div key={index} className="flex items-start space-x-3">
-                    <div className={`p-2 rounded-full ${getSpeakerColor(segment.speaker)}`}>
-                      <User className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <span className={`text-sm font-medium ${getSpeakerColor(segment.speaker).split(' ')[1]}`}>
-                          Speaker {segment.speaker + 1}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {formatTime(segment.start)} - {formatTime(segment.end)}
-                        </span>
-                      </div>
-                      <p className="text-gray-800 bg-white p-3 rounded-lg border">
-                        {segment.text}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              {/* Full Transcript Toggle */}
-              <details className="mt-4">
-                <summary className="cursor-pointer text-sm font-medium text-blue-600 hover:text-blue-800">
-                  Show full transcript (combined)
-                </summary>
-                <div className="mt-2 p-3 bg-gray-100 rounded-lg">
-                  <p className="whitespace-pre-wrap text-sm">{transcript}</p>
-                </div>
-              </details>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Legacy Transcript Display (fallback) */}
-        {transcript && speakerSegments.length === 0 && (
+        {/* Transcript Display */}
+        {transcript && (
           <Card className="mb-6 border-blue-200 bg-blue-50">
             <CardHeader>
               <CardTitle>Transcript</CardTitle>
