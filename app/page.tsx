@@ -32,7 +32,7 @@ export default function WarmlyDashboard() {
 
   const upcomingReminders = [];
 
-  const [structuredTranscript, setStructuredTranscript] = useState<object>({});
+  const [structuredTranscripts, setStructuredTranscripts] = useState<object[]>([{}]);
 
   async function transcribeAudioWithDeepgram(audioBlob: Blob): Promise<string> {
     try {
@@ -102,7 +102,7 @@ export default function WarmlyDashboard() {
           });
 
           const result = await response.json();
-          setStructuredTranscript(result);
+          setStructuredTranscripts(prev => [...prev, result]);
         };
 
         mediaRecorder.start();
@@ -364,35 +364,33 @@ export default function WarmlyDashboard() {
             </div>
           </TabsContent>
         </Tabs>
-        {structuredTranscript && (
+
+        {structuredTranscripts.length > 0 && (
           <Card className="mb-6 border-green-200 bg-green-50">
             <CardHeader>
-              <CardTitle>Structured Summary</CardTitle>
-              <CardDescription>Automatically extracted insights</CardDescription>
+              <CardTitle>Structured Transcripts</CardTitle>
+              <CardDescription>Insights parsed from your conversations</CardDescription>
             </CardHeader>
-            <CardContent>
-              {Object.entries(structuredTranscript).map(([key, value]) => (
-                <div key={key} className="mb-4">
-                  <h4 className="text-sm font-semibold text-gray-800">{key}</h4>
-                  {Array.isArray(value) && value.length > 0 ? (
-                    <ul className="list-disc list-inside text-gray-700">
-                      {value.map((item, index) => (
-                        <li key={index}>
-                          {typeof item === "string"
-                            ? item
-                            : `${item.Owner ?? ""} - ${item.Task ?? JSON.stringify(item)}`}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-sm text-gray-500 italic">No data</p>
-                  )}
+            <CardContent className="space-y-4">
+              {structuredTranscripts.map((structured, idx) => (
+                <div key={idx} className="p-4 bg-white rounded border shadow-sm">
+                  {Object.entries(structured).map(([key, value]) => (
+                    <div key={key} className="mb-3">
+                      <h4 className="font-semibold text-gray-700">{key}</h4>
+                      <ul className="list-disc list-inside text-gray-600">
+                        {(value as string[]).length === 0 ? (
+                          <li className="italic text-gray-400">None</li>
+                        ) : (
+                          (value as string[]).map((item, i) => <li key={i}>{item}</li>)
+                        )}
+                      </ul>
+                    </div>
+                  ))}
                 </div>
               ))}
             </CardContent>
           </Card>
         )}
-
       </div>
     </div>
   );
