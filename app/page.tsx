@@ -320,10 +320,22 @@ export default function WarmlyDashboard() {
                         <div key={key} className="mb-3">
                           <h4 className="font-semibold text-gray-700">{key}</h4>
                           <ul className="list-disc list-inside text-gray-600">
-                            {(value as string[]).length === 0 ? (
-                              <li className="italic text-gray-400">None</li>
+                            {Array.isArray(value) ? (
+                              value.length === 0 ? (
+                                <li className="italic text-gray-400">None</li>
+                              ) : (
+                                value.map((item, i) =>
+                                  typeof item === 'string' || typeof item === 'number'
+                                    ? <li key={i}>{item}</li>
+                                    : <li key={i}>{
+                                      <pre>{JSON.stringify(item, null, 2)}</pre>
+                                    }</li>
+                                )
+                              )
+                            ) : typeof value === 'string' || typeof value === 'number' ? (
+                              <li>{value}</li>
                             ) : (
-                              (value as string[]).map((item, i) => <li key={i}>{item}</li>)
+                              <li>{JSON.stringify(value)}</li>
                             )}
                           </ul>
                         </div>
