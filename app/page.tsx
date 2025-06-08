@@ -314,7 +314,7 @@ export default function WarmlyDashboard() {
                       >
                         Remove
                       </Button>
-
+                      <h1 className="font-bold text-gray-3000">Conversation {idx}: </h1>
                       {Object.entries(structured).map(([key, value]) => (
                         <div key={key} className="mb-3">
                           <h4 className="font-semibold text-gray-700">{key}</h4>
@@ -351,6 +351,33 @@ export default function WarmlyDashboard() {
                     Start recording to capture and analyze your networking conversations
                   </p>
                 </div>}
+
+                {structuredTranscripts.length !== 0 && (
+                  <Card className="mb-6 border-green-200 bg-green-50">
+                    <CardHeader>
+                      <CardTitle>Contacts</CardTitle>
+                      <CardDescription>Insights parsed from your conversations</CardDescription>
+                    </CardHeader>
+
+                    {structuredTranscripts.length !== 0 && <CardContent className="space-y-4">
+                      {structuredTranscripts.map((structured, transcript_idx) => (
+                        structured["Names of Speakers"].length !== 0 &&
+                        <div key={transcript_idx} className="relative p-4 bg-white rounded border shadow-sm">
+                          {structured["Names of Speakers"].map((name: string, idx: number) => (
+                            <p>
+                              From conversation {transcript_idx + 1}, name of speaker: "{name}".
+                              Their business interests: {
+                                structured["Social or Business Overlaps"].length === 0
+                                  ? "None"
+                                  : structured["Social or Business Overlaps"]
+                              }
+                            </p>
+                          ))}
+                        </div>
+                      ))}
+                    </CardContent>}
+                  </Card>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -369,6 +396,7 @@ export default function WarmlyDashboard() {
                     Start recording to capture and analyze your networking conversations
                   </p>
                 </div>}
+
                 {structuredTranscripts.length !== 0 && (
                   <Card className="mb-6 border-green-200 bg-green-50">
                     <CardHeader>
@@ -381,7 +409,7 @@ export default function WarmlyDashboard() {
                         structured["Things to Follow Up On"].length !== 0 &&
                         <div key={transcript_idx} className="relative p-4 bg-white rounded border shadow-sm">
                           {structured["Things to Follow Up On"].map((followup: string, idx: number) => (
-                            <p>From conversation {transcript_idx}: "{followup}"</p>
+                            <p>From conversation {transcript_idx + 1}: "{followup}"</p>
                           ))}
                         </div>
                       ))}
