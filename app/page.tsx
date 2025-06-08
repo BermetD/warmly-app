@@ -7,9 +7,14 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Mic, MicOff, Users, Calendar, Bell, Search, Plus, TrendingUp, Clock } from "lucide-react"
 
+import { useRef } from "react"
+
 export default function WarmlyDashboard() {
   const [isRecording, setIsRecording] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
 
   const upcomingReminders = []
 
@@ -25,6 +30,46 @@ export default function WarmlyDashboard() {
         return "bg-gray-100 text-gray-800"
     }
   }
+
+  const handleRecordingToggle = async () => {
+    if (!isRecording) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+        const mediaRecorder = new MediaRecorder(stream)
+        mediaRecorderRef.current = mediaRecorder
+        audioChunksRef.current = []
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data)
+          }
+        }
+
+        mediaRecorder.onstop = () => {
+          const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" })
+          const reader = new FileReader()
+
+          reader.onloadend = () => {
+            const base64Audio = reader.result as string
+            localStorage.setItem("audioRecording", base64Audio)
+            console.log("✅ Audio saved to localStorage")
+          }
+
+          reader.readAsDataURL(audioBlob)
+        }
+
+        mediaRecorder.start()
+        setIsRecording(true)
+      } catch (error) {
+        console.error("🎙️ Error starting recording:", error)
+      }
+    } else {
+      mediaRecorderRef.current?.stop()
+      mediaRecorderRef.current?.stream.getTracks().forEach(track => track.stop())
+      setIsRecording(false)
+    }
+  }
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -43,7 +88,7 @@ export default function WarmlyDashboard() {
           <div className="flex items-center space-x-4">
             <Button
               variant={isRecording ? "destructive" : "default"}
-              onClick={() => setIsRecording(!isRecording)}
+              onClick={handleRecordingToggle}
               className="flex items-center space-x-2"
             >
               {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
