@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -30,9 +30,25 @@ export default function WarmlyDashboard() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  const upcomingReminders = [];
-
   const [structuredTranscripts, setStructuredTranscripts] = useState<object[]>([{}]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("structuredTranscripts");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          setStructuredTranscripts(parsed);
+        }
+      } catch (e) {
+        console.error("❌ Failed to parse structuredTranscripts from localStorage:", e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("structuredTranscripts", JSON.stringify(structuredTranscripts));
+  }, [structuredTranscripts]);
 
   async function transcribeAudioWithDeepgram(audioBlob: Blob): Promise<string> {
     try {
@@ -280,35 +296,6 @@ export default function WarmlyDashboard() {
                 <CardTitle>Upcoming Follow-ups</CardTitle>
                 <CardDescription>Action items and reminders based on your conversations.</CardDescription>
               </CardHeader>
-              <CardContent>
-                {upcomingReminders.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p>No follow-ups scheduled</p>
-                    <p className="text-sm">Follow-up reminders will appear here after conversations</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {upcomingReminders.map((reminder) => (
-                      <div
-                        key={reminder.id}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                      >
-                        <div>
-                          <p className="font-medium">{reminder.contact}</p>
-                          <p className="text-sm text-gray-600">{reminder.action}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium text-orange-600">{reminder.due}</p>
-                          <Button size="sm" variant="outline" className="mt-1">
-                            Mark Done
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
             </Card>
           </TabsContent>
 
