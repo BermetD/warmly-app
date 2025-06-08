@@ -86,7 +86,21 @@ export default function WarmlyDashboard() {
 
           // Call Deepgram API via backend
           const transcriptText = await transcribeAudioWithDeepgram(audioBlob);
+
           setTranscript(transcriptText);
+
+          const transcript_data = { transcript: transcriptText};
+
+          const response = await fetch('https://warmly-transcript-api.vercel.app/structured_transcript', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(transcript_data),
+          });
+
+          const result = await response.json();
+          console.log(result);
         };
 
         mediaRecorder.start();
