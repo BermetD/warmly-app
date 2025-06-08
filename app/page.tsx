@@ -106,7 +106,8 @@ export default function WarmlyDashboard() {
           // Call Deepgram API via backend
           const transcriptText = await transcribeAudioWithDeepgram(audioBlob);
 
-          // setTranscript(transcriptText);
+          setTranscript(transcriptText);
+          console.log(transcript);
 
           const transcript_data = { transcript: transcriptText };
 
