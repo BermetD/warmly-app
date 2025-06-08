@@ -134,6 +134,13 @@ export default function WarmlyDashboard() {
     }
   };
 
+  const handleRemoveTranscript = (index: number) => {
+    const updated = structuredTranscripts.filter((_, i) => i !== index);
+    setStructuredTranscripts(updated);
+    localStorage.setItem("structuredTranscripts", JSON.stringify(updated));
+  };
+
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -141,11 +148,11 @@ export default function WarmlyDashboard() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <Image 
-                src="/Warmly Logo.webp" 
-                alt="The company (warmly) logo." 
+              <Image
+                src="/Warmly Logo.webp"
+                alt="The company (warmly) logo."
                 width={150}
-                height={150} 
+                height={150}
               />
             </div>
           </div>
@@ -363,7 +370,17 @@ export default function WarmlyDashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               {structuredTranscripts.map((structured, idx) => (
-                <div key={idx} className="p-4 bg-white rounded border shadow-sm">
+                <div key={idx} className="relative p-4 bg-white rounded border shadow-sm">
+                  {/* 🗑️ Remove button */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveTranscript(idx)}
+                    className="absolute top-2 right-2 text-red-500 hover:bg-red-50"
+                  >
+                    Remove
+                  </Button>
+
                   {Object.entries(structured).map(([key, value]) => (
                     <div key={key} className="mb-3">
                       <h4 className="font-semibold text-gray-700">{key}</h4>
