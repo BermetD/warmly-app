@@ -212,8 +212,8 @@ export default function WarmlyDashboard() {
               </div>
               <p className="text-2xl font-bold text-gray-900 mt-2">
                 {structuredTranscripts.length !== 0
-                  ? structuredTranscripts.reduce((sum, currentValue, currentIndex, array) => {
-                    return sum + currentValue["Names of Speakers"].length;
+                  ? structuredTranscripts.reduce((sum, currentValue) => {
+                    return sum + (currentValue["Names of Speakers"] || []).length;
                   }, 0)
                   : "—"}
               </p>
@@ -240,8 +240,8 @@ export default function WarmlyDashboard() {
               </div>
               <p className="text-2xl font-bold text-gray-900 mt-2">
                 {structuredTranscripts.length !== 0
-                  ? structuredTranscripts.reduce((sum, currentValue, currentIndex, array) => {
-                    return sum + currentValue["Things to Follow Up On"].length;
+                  ? structuredTranscripts.reduce((sum, currentValue) => {
+                    return sum + (currentValue["Things to Follow Up On"] || []).length;
                   }, 0)
                   : "—"}
               </p>
@@ -256,8 +256,8 @@ export default function WarmlyDashboard() {
               </div>
               <p className="text-2xl font-bold text-gray-900 mt-2">
                 {structuredTranscripts.length !== 0
-                  ? structuredTranscripts.reduce((sum, currentValue, currentIndex, array) => {
-                    return sum + currentValue["Social or Business Overlaps"].length;
+                  ? structuredTranscripts.reduce((sum, currentValue) => {
+                    return sum + (currentValue["Social or Business Overlaps"] || []).length;
                   }, 0)
                   : "—"}
               </p>
@@ -364,13 +364,13 @@ export default function WarmlyDashboard() {
                       {structuredTranscripts.map((structured, transcript_idx) => (
                         structured["Names of Speakers"].length !== 0 &&
                         <div key={transcript_idx} className="relative p-4 bg-white rounded border shadow-sm">
-                          {structured["Names of Speakers"].map((name: string, idx: number) => (
-                            <p>
+                          {(structured["Names of Speakers"] || []).map((name: string, idx: number) => (
+                            <p key={`${transcript_idx}-${idx}`} className="mb-2">
                               From conversation {transcript_idx + 1}, name of speaker: "{name}".
                               Their business interests: {
-                                structured["Social or Business Overlaps"].length === 0
+                                (structured["Social or Business Overlaps"] || []).length === 0
                                   ? "None"
-                                  : structured["Social or Business Overlaps"]
+                                  : (structured["Social or Business Overlaps"] || []).join(", ")
                               }
                             </p>
                           ))}
@@ -390,13 +390,15 @@ export default function WarmlyDashboard() {
                 <CardDescription>Action items and reminders based on your conversations.</CardDescription>
               </CardHeader>
               <CardContent>
-                {structuredTranscripts.length === 0 && <div className="text-center py-12 text-gray-500">
-                  <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No conversations yet</h3>
-                  <p className="text-sm">
-                    Start recording to capture and analyze your networking conversations
-                  </p>
-                </div>}
+                {structuredTranscripts.length === 0 && (
+                  <div className="text-center py-12 text-gray-500">
+                    <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No conversations yet</h3>
+                    <p className="text-sm">
+                      Start recording to capture and analyze your networking conversations
+                    </p>
+                  </div>
+                )}
 
                 {structuredTranscripts.length !== 0 && (
                   <Card className="mb-6 border-green-200 bg-green-50">
@@ -405,16 +407,19 @@ export default function WarmlyDashboard() {
                       <CardDescription>Insights parsed from your conversations</CardDescription>
                     </CardHeader>
 
-                    {structuredTranscripts.length !== 0 && <CardContent className="space-y-4">
+                    <CardContent className="space-y-4">
                       {structuredTranscripts.map((structured, transcript_idx) => (
-                        structured["Things to Follow Up On"].length !== 0 &&
-                        <div key={transcript_idx} className="relative p-4 bg-white rounded border shadow-sm">
-                          {structured["Things to Follow Up On"].map((followup: string, idx: number) => (
-                            <p>From conversation {transcript_idx + 1}: "{followup}"</p>
-                          ))}
-                        </div>
+                        (structured["Things to Follow Up On"] || []).length !== 0 && (
+                          <div key={transcript_idx} className="relative p-4 bg-white rounded border shadow-sm">
+                            {(structured["Things to Follow Up On"] || []).map((followup: string, idx: number) => (
+                              <p key={`${transcript_idx}-${idx}`} className="mb-2">
+                                From conversation {transcript_idx + 1}: "{followup}"
+                              </p>
+                            ))}
+                          </div>
+                        )
                       ))}
-                    </CardContent>}
+                    </CardContent>
                   </Card>
                 )}
               </CardContent>
