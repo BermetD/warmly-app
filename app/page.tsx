@@ -38,7 +38,7 @@ export default function WarmlyDashboard() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && parsed.length >= 1) {
           setStructuredTranscripts(parsed);
         }
       } catch (e) {
