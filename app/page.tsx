@@ -111,6 +111,11 @@ export default function WarmlyDashboard() {
 
           const transcript_data = { transcript: transcriptText };
 
+          if (transcriptText === "") {
+            console.warn("Transcript data is empty.")
+            return;
+          }
+
           const response = await fetch('https://warmly-transcript-api.vercel.app/structured_transcript', {
             method: 'POST',
             headers: {
