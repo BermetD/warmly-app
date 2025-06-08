@@ -22,6 +22,7 @@ import {
   TrendingUp,
   Clock,
 } from "lucide-react";
+import Image from 'next/image';
 
 export default function WarmlyDashboard() {
   const [isRecording, setIsRecording] = useState(false);
@@ -140,10 +141,12 @@ export default function WarmlyDashboard() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-white" />
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900">Warmly</h1>
+              <Image 
+                src="/Warmly Logo.webp" 
+                alt="The company (warmly) logo." 
+                width={150}
+                height={150} 
+              />
             </div>
           </div>
 
