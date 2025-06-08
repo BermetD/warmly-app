@@ -296,6 +296,42 @@ export default function WarmlyDashboard() {
                 Start recording to capture and analyze your networking conversations
               </p>
             </div>}
+
+            {structuredTranscripts.length > 0 && structuredTranscripts.some(obj => Object.keys(obj).length > 0) && (
+              <Card className="mb-6 border-green-200 bg-green-50">
+                <CardHeader>
+                  <CardTitle>Structured Transcripts</CardTitle>
+                  <CardDescription>Insights parsed from your conversations</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {structuredTranscripts.map((structured, idx) => (
+                    <div key={idx} className="relative p-4 bg-white rounded border shadow-sm">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveTranscript(idx)}
+                        className="absolute top-2 right-2 text-red-500 hover:bg-red-50"
+                      >
+                        Remove
+                      </Button>
+
+                      {Object.entries(structured).map(([key, value]) => (
+                        <div key={key} className="mb-3">
+                          <h4 className="font-semibold text-gray-700">{key}</h4>
+                          <ul className="list-disc list-inside text-gray-600">
+                            {(value as string[]).length === 0 ? (
+                              <li className="italic text-gray-400">None</li>
+                            ) : (
+                              (value as string[]).map((item, i) => <li key={i}>{item}</li>)
+                            )}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="contacts" className="space-y-4">
@@ -308,11 +344,13 @@ export default function WarmlyDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-gray-500">
+                {structuredTranscripts.length === 0 && <div className="text-center py-8 text-gray-500">
                   <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p>Contact management interface would be implemented here</p>
-                  <p className="text-sm">Including filtering, tagging, and relationship tracking</p>
-                </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No conversations yet</h3>
+                  <p className="text-sm">
+                    Start recording to capture and analyze your networking conversations
+                  </p>
+                </div>}
               </CardContent>
             </Card>
           </TabsContent>
@@ -323,6 +361,34 @@ export default function WarmlyDashboard() {
                 <CardTitle>Upcoming Follow-ups</CardTitle>
                 <CardDescription>Action items and reminders based on your conversations.</CardDescription>
               </CardHeader>
+              <CardContent>
+                {structuredTranscripts.length === 0 && <div className="text-center py-12 text-gray-500">
+                  <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No conversations yet</h3>
+                  <p className="text-sm">
+                    Start recording to capture and analyze your networking conversations
+                  </p>
+                </div>}
+                {structuredTranscripts.length !== 0 && (
+                  <Card className="mb-6 border-green-200 bg-green-50">
+                    <CardHeader>
+                      <CardTitle>Follow-ups</CardTitle>
+                      <CardDescription>Insights parsed from your conversations</CardDescription>
+                    </CardHeader>
+
+                    {structuredTranscripts.length !== 0 && <CardContent className="space-y-4">
+                      {structuredTranscripts.map((structured, transcript_idx) => (
+                        structured["Things to Follow Up On"].length !== 0 &&
+                        <div key={transcript_idx} className="relative p-4 bg-white rounded border shadow-sm">
+                          {structured["Things to Follow Up On"].map((followup: string, idx: number) => (
+                            <p>From conversation {transcript_idx}: "{followup}"</p>
+                          ))}
+                        </div>
+                      ))}
+                    </CardContent>}
+                  </Card>
+                )}
+              </CardContent>
             </Card>
           </TabsContent>
 
@@ -335,29 +401,29 @@ export default function WarmlyDashboard() {
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm">SaaS/Tech</span>
-                      <span className="text-sm font-medium">45%</span>
+                      <span className="text-sm">N/A</span>
+                      <span className="text-sm font-medium">0%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-blue-600 h-2 rounded-full" style={{ width: "45%" }}></div>
+                      <div className="bg-blue-600 h-2 rounded-full" style={{ width: "0%" }}></div>
                     </div>
                   </div>
                   <div className="space-y-3 mt-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm">Healthcare/Biotech</span>
-                      <span className="text-sm font-medium">25%</span>
+                      <span className="text-sm">N/A</span>
+                      <span className="text-sm font-medium">0%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-green-600 h-2 rounded-full" style={{ width: "25%" }}></div>
+                      <div className="bg-green-600 h-2 rounded-full" style={{ width: "0%" }}></div>
                     </div>
                   </div>
                   <div className="space-y-3 mt-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm">CleanTech</span>
-                      <span className="text-sm font-medium">20%</span>
+                      <span className="text-sm">N/A</span>
+                      <span className="text-sm font-medium">0%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-purple-600 h-2 rounded-full" style={{ width: "20%" }}></div>
+                      <div className="bg-purple-600 h-2 rounded-full" style={{ width: "0%" }}></div>
                     </div>
                   </div>
                 </CardContent>
@@ -378,43 +444,7 @@ export default function WarmlyDashboard() {
             </div>
           </TabsContent>
         </Tabs>
-
-        {structuredTranscripts.length > 0 && structuredTranscripts.some(obj => Object.keys(obj).length > 0) && (
-          <Card className="mb-6 border-green-200 bg-green-50">
-            <CardHeader>
-              <CardTitle>Structured Transcripts</CardTitle>
-              <CardDescription>Insights parsed from your conversations</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {structuredTranscripts.map((structured, idx) => (
-                <div key={idx} className="relative p-4 bg-white rounded border shadow-sm">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveTranscript(idx)}
-                    className="absolute top-2 right-2 text-red-500 hover:bg-red-50"
-                  >
-                    Remove
-                  </Button>
-
-                  {Object.entries(structured).map(([key, value]) => (
-                    <div key={key} className="mb-3">
-                      <h4 className="font-semibold text-gray-700">{key}</h4>
-                      <ul className="list-disc list-inside text-gray-600">
-                        {(value as string[]).length === 0 ? (
-                          <li className="italic text-gray-400">None</li>
-                        ) : (
-                          (value as string[]).map((item, i) => <li key={i}>{item}</li>)
-                        )}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
       </div>
-    </div>
+    </div >
   );
 }
