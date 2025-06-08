@@ -32,6 +32,8 @@ export default function WarmlyDashboard() {
 
   const upcomingReminders = [];
 
+  const [structuredTranscript, setStructuredTranscript] = useState<object>({});
+
   async function transcribeAudioWithDeepgram(audioBlob: Blob): Promise<string> {
     try {
       const response = await fetch("/api/transcribe", {
@@ -87,9 +89,9 @@ export default function WarmlyDashboard() {
           // Call Deepgram API via backend
           const transcriptText = await transcribeAudioWithDeepgram(audioBlob);
 
-          setTranscript(transcriptText);
+          // setTranscript(transcriptText);
 
-          const transcript_data = { transcript: transcriptText};
+          const transcript_data = { transcript: transcriptText };
 
           const response = await fetch('https://warmly-transcript-api.vercel.app/structured_transcript', {
             method: 'POST',
@@ -100,7 +102,7 @@ export default function WarmlyDashboard() {
           });
 
           const result = await response.json();
-          console.log(result);
+          setStructuredTranscript(result);
         };
 
         mediaRecorder.start();
@@ -362,6 +364,35 @@ export default function WarmlyDashboard() {
             </div>
           </TabsContent>
         </Tabs>
+        {structuredTranscript && (
+          <Card className="mb-6 border-green-200 bg-green-50">
+            <CardHeader>
+              <CardTitle>Structured Summary</CardTitle>
+              <CardDescription>Automatically extracted insights</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {Object.entries(structuredTranscript).map(([key, value]) => (
+                <div key={key} className="mb-4">
+                  <h4 className="text-sm font-semibold text-gray-800">{key}</h4>
+                  {Array.isArray(value) && value.length > 0 ? (
+                    <ul className="list-disc list-inside text-gray-700">
+                      {value.map((item, index) => (
+                        <li key={index}>
+                          {typeof item === "string"
+                            ? item
+                            : `${item.Owner ?? ""} - ${item.Task ?? JSON.stringify(item)}`}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic">No data</p>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
       </div>
     </div>
   );
